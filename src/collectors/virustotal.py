@@ -65,8 +65,8 @@ def _get_with_rate_limit(
 
     Returns the parsed JSON dict.  Raises on non-recoverable errors.
     """
-    for attempt in range(1, max_retries + 2):
-        logger.debug("GET %s (attempt %d)", url, attempt)
+    for attempt in range(max_retries + 1):
+        logger.debug("GET %s (attempt %d/%d)", url, attempt + 1, max_retries + 1)
         try:
             resp = session.get(url, timeout=timeout)
         except requests.exceptions.Timeout:
@@ -90,7 +90,7 @@ def _get_with_rate_limit(
                 "VT rate limit hit for %s. Sleeping %ds (attempt %d/%d)",
                 url,
                 retry_after,
-                attempt,
+                attempt + 1,
                 max_retries + 1,
             )
             time.sleep(retry_after)

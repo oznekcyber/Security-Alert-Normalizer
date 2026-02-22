@@ -158,11 +158,14 @@ def normalize_virustotal(
         categories = []
 
     # --- Geo (IP only) ---
+    # VT returns a two-letter ISO country code in the "country" field;
+    # there is no separate full-name field at this endpoint level.
     geo: Optional[GeoInfo] = None
     if indicator_type == IndicatorType.IP:
+        country_code = attrs.get("country")
         geo = GeoInfo(
-            country=attrs.get("country"),
-            country_code=attrs.get("country"),
+            country=None,        # VT doesn't provide the full country name
+            country_code=country_code,
             asn=attrs.get("asn"),
             as_owner=attrs.get("as_owner"),
             network=attrs.get("network"),
@@ -234,7 +237,8 @@ def normalize_abuseipdb(
 
     abuse_confidence: int = data.get("abuseConfidenceScore", 0)
     total_reports: int = data.get("totalReports", 0)
-    threat_score: int = abuse_confidence
+    # Defensively cap at 100 even though the API documents 0-100 range
+    threat_score: int = min(abuse_confidence, 100)
     verdict = _score_to_verdict(threat_score)
 
     # --- Geo ---

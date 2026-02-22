@@ -227,7 +227,7 @@ class TestNormalizeVirusTotal:
     def test_malicious_ip_geo_populated(self, vt_ip_malicious):
         alert = normalize_virustotal(vt_ip_malicious, "185.220.101.1", IndicatorType.IP)
         assert alert.geo is not None
-        assert alert.geo.country == "DE"
+        assert alert.geo.country_code == "DE"
         assert alert.geo.asn == 205100
 
     def test_malicious_ip_tags(self, vt_ip_malicious):
@@ -424,6 +424,6 @@ class TestJQFilter:
         alerts = self._make_alerts(vt_ip_malicious, abuse_ip_clean)
         result = apply_jq_filter(
             alerts,
-            '[.[] | select(.source == "virustotal") | .geo.country]',
+            '[.[] | select(.source == "virustotal") | .geo.country_code]',
         )
         assert "DE" in result

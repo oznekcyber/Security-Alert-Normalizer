@@ -86,7 +86,7 @@ def send_webhook(
         "POSTing %d alert(s) to webhook %s", len(alerts), webhook_url
     )
 
-    for attempt in range(1, max_retries + 2):
+    for attempt in range(max_retries + 1):
         try:
             resp = session.post(
                 webhook_url,
@@ -96,10 +96,10 @@ def send_webhook(
             )
         except requests.exceptions.Timeout:
             logger.warning(
-                "Webhook POST timed out (attempt %d/%d)", attempt, max_retries + 1
+                "Webhook POST timed out (attempt %d/%d)", attempt + 1, max_retries + 1
             )
-            if attempt <= max_retries:
-                time.sleep(backoff_factor ** attempt)
+            if attempt < max_retries:
+                time.sleep(backoff_factor ** (attempt + 1))
             continue
         except requests.exceptions.ConnectionError as exc:
             logger.error("Webhook connection error: %s", exc)
@@ -123,7 +123,7 @@ def send_webhook(
         logger.warning(
             "Webhook returned HTTP %d (attempt %d/%d)",
             resp.status_code,
-            attempt,
+            attempt + 1,
             max_retries + 1,
         )
 

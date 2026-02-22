@@ -79,8 +79,8 @@ def fetch_ip_report(ip: str, cfg: Config, max_age_days: int = 90) -> dict[str, A
 
     logger.info("Fetching AbuseIPDB report for %s", ip)
 
-    for attempt in range(1, cfg.max_retries + 2):
-        logger.debug("GET %s for %s (attempt %d)", url, ip, attempt)
+    for attempt in range(cfg.max_retries + 1):
+        logger.debug("GET %s for %s (attempt %d/%d)", url, ip, attempt + 1, cfg.max_retries + 1)
         try:
             resp = session.get(url, params=params, timeout=cfg.request_timeout)
         except requests.exceptions.Timeout:
@@ -104,7 +104,7 @@ def fetch_ip_report(ip: str, cfg: Config, max_age_days: int = 90) -> dict[str, A
                 "AbuseIPDB rate limit hit for %s. Sleeping %ds (attempt %d/%d)",
                 ip,
                 retry_after,
-                attempt,
+                attempt + 1,
                 cfg.max_retries + 1,
             )
             time.sleep(retry_after)
